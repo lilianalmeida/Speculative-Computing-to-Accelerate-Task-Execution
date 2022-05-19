@@ -1,0 +1,6 @@
+psutil
+cryptography
+opcua
+numpy
+scikit-learn
+pandas
