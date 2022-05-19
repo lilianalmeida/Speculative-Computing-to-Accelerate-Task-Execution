@@ -3,7 +3,7 @@ from core import fb
 from core import fb_interface
 from xml.etree import ElementTree as ETree
 import logging
-
+from speculator import table_management
 
 
 
@@ -16,8 +16,10 @@ class Configuration:
         self.fb_dictionary = dict()
 
         self.config_id = config_id
-
+        
         self.create_fb('START', config_type)
+        
+        self.table_management = table_management.TableManagement(config_id, self.fb_dictionary)
 
     def get_fb(self, fb_name):
         fb_element = None
@@ -55,15 +57,16 @@ class Configuration:
             fb_res.download_fb()
 
         fb_definition, fb_obj = fb_res.import_fb()
+        input_gen_obj = fb_res.import_input_generations()
 
         # check if if happened any importing error
         if fb_definition is not None:
 
             ## if it is a real FB, not a hidden one
             if monitor:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, monitor=self.monitor)
+                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, input_gen_obj, monitor=self.monitor)
             else:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition)
+                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, input_gen_obj)
 
             self.set_fb(fb_name, fb_element)
             logging.info('created fb type: {0}, instance: {1}'.format(fb_type, fb_name))
@@ -162,6 +165,8 @@ class Configuration:
 
     def start_work(self):
         logging.info('starting the fb flow...')
+        self.table_management.start()
+        
         for fb_name, fb_element in self.fb_dictionary.items():
             if fb_name != 'START':
                 fb_element.start()

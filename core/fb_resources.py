@@ -59,6 +59,35 @@ class FBResources:
             logging.info('python file imported from: {0}'.format(self.py_path))
 
         return root, fb_obj
+    
+    def import_input_generations(self):
+        logging.info('importing input generation class from fb python file...')
+        input_gen_obj = None
+
+        try:
+            # Import method from python file
+            py_fb = importlib.import_module('.' + self.fb_type, package='resources.function_blocks')
+            # Gets the running fb method
+            fb_class = getattr(py_fb, self.fb_type + "InputGen")
+            # Instance the fb class
+            input_gen_obj = fb_class()
+
+        except ModuleNotFoundError as error:
+            logging.error('can not import the module (check fb_type.py nomenclature)')
+            logging.error(error)
+
+        except AttributeError as error:
+            logging.error('can not find the inputs generation class (check if fb_type.py has a class named [fb_type + InputGen])')
+            logging.error(error)
+
+        except Exception as ex:
+            logging.error(ex)
+
+        else:
+            logging.info('input generation class imported from: {0}'.format(self.py_path))
+
+        return input_gen_obj
+        
 
     def get_xml(self):
         logging.info('getting the xml fb definition...')

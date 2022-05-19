@@ -212,7 +212,7 @@ class FBInterface:
 
 ###############################################################################
 
-    def __init__(self, fb_name, fb_type, xml_root, monitor=None):
+    def __init__(self, fb_name, fb_type, xml_root, input_gen_class, monitor=None):
 
         self.fb_name = fb_name
         self.fb_type = fb_type
@@ -231,6 +231,9 @@ class FBInterface:
         self.output_events = OrderedDict()
         self.input_vars = OrderedDict()
         self.output_vars = OrderedDict()
+        
+        self.speculate_events = []
+        self.speculate_vars = OrderedDict()
 
         logging.info('parsing the fb interface (inputs/outputs events/vars)')
 
@@ -248,6 +251,9 @@ class FBInterface:
                             event_name = event.attrib['Name']
                             event_type = event.attrib['Type']
                             self.input_events[event_name] = (event_type, None, False)
+                            
+                            if event.get('Speculative') == 'TRUE':
+                                self.speculate_events.append(event_name)
 
                     # Output Events
                     elif interface.tag == 'EventOutputs':
@@ -264,7 +270,15 @@ class FBInterface:
                             var_name = var.attrib['Name']
                             var_type = var.attrib['Type']
                             self.input_vars[var_name] = (var_type, None, False)
-
+                            
+                            if event.get('RandomGeneration') != None:
+                                try:
+                                    method = getattr(input_gen_class, event.get('RandomGeneration'))
+                                except AttributeError:
+                                    logging.error('can not find the input generation method {0} (check if it exists)'.format(event.get('RandomGeneration')))
+                                else:
+                                    self.speculate_vars[var_name] = method
+                                    
                     # Output vars
                     elif interface.tag == 'OutputVars':
                         # Iterates over the output vars
