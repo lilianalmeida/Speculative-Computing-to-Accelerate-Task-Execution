@@ -192,7 +192,7 @@ class OPTIMIZER:
             if len(self.results) == len(self.params): # reached the end of a generations
 
                 if self.generation_counter == self.n_generations:  # end of algorithm execution
-                    print("End\n\n")
+
                     popRanked = sorted(self.results.items(), key=operator.itemgetter(1), reverse=True)
                     bestRouteIndex = popRanked[0][0]
                     bestRoute = self.params[bestRouteIndex]
@@ -206,7 +206,7 @@ class OPTIMIZER:
                     return [None, None, event_value,
                             None, bestRoute]
                 else:
-                    print("Next Pop\n\n")
+
                     # sort results
                     nextPop = self.nextGeneration(self.results, self.params, self.elite_size, self.mutation)
 
@@ -218,6 +218,5 @@ class OPTIMIZER:
                             str(self.params), None]
 
             else: #wait for more results
-                print("Waiting Results\n\n")
                 return [None, None, None,
                         None, None]
