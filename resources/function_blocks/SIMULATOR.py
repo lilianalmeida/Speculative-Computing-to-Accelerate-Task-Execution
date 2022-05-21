@@ -4,8 +4,8 @@ import paho.mqtt.client as mqtt
 import random
 
 class CityInputGen:
-    def params_generation(self, lookup_table, speculable_variables): # TODO: add event if used on the other side
-        prev_input = list(next(iter(lookup_table)))
+    def params_generation(self, event, event_table, speculable_variables, lookup_table):
+        prev_input = list(next(iter(event_table)))
         print("prev Input ", prev_input)
         
         # get random number between 0 and the penultimate index of the lookup table

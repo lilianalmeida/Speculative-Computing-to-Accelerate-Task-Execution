@@ -32,5 +32,6 @@ class Lookup:
             print("Execute task")
             return False
             
-    def get_table_size(self):
-        return len(self.lookupTable)
+    def get_table_event_size(self, event_name):
+        event_table = [k for k in self.lookupTable.keys() if event_name == k[0]]
+        return len(self.event_table)
