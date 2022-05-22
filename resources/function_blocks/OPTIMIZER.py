@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 import random
 import pandas as pd
 import operator
+import logging
 
 class City:
     def __init__(self, x, y):
@@ -161,7 +162,8 @@ class OPTIMIZER:
                     None, None]
 
         if event_name == 'RUN': # initial execution
-
+            
+            logging.warning("Init execution")
             # GA Parameter to execute
             self.target = target
             self.init_pop = eval(init_pop)
@@ -202,6 +204,7 @@ class OPTIMIZER:
                         cityList.append(City(bestRoute[i][0], bestRoute[i][1]))
 
                     print("Final distance: " + str(1 / Fitness(cityList).routeFitness()))
+                    logging.warning("Final distance: %s", str(1 / Fitness(cityList).routeFitness()))
 
                     return [None, None, event_value,
                             None, bestRoute]

@@ -1,4 +1,4 @@
-
+import logging
 class Lookup:
 
     def __init__(self):
@@ -14,24 +14,26 @@ class Lookup:
         # may use generators to join input values
         
     def write_entry(self, input, output):
-        print("Writing entry (", input, ', ', output, ")")
+        # logging.info("Writing entry (%s, %s)", input, output)
         
         inputKey = tuple(input)
         
         self.lookupTable[inputKey] = output
         
     def decision(self, input):
-        print("Speculator decision making for input ", input)
+        # logging.info("Table %s", self.lookupTable)
+        # logging.info("Speculator decision making for input %s", input)
         
         output = self.lookup_input(input)
         
         if output != None:
-            print("Output ", output)
+            # logging.info("Output %s", output)
             return output
         else:
-            print("Execute task")
+            # logging.info("Execute task")
             return False
             
     def get_table_event_size(self, event_name):
+        # logging.info("Table len %s", len(self.lookupTable))
         event_table = [k for k in self.lookupTable.keys() if event_name == k[0]]
-        return len(self.event_table)
+        return len(event_table)

@@ -271,11 +271,11 @@ class FBInterface:
                             var_type = var.attrib['Type']
                             self.input_vars[var_name] = (var_type, None, False)
                             
-                            if event.get('RandomGeneration') != None:
+                            if var.get('RandomGeneration') != None:
                                 try:
-                                    method = getattr(input_gen_class, event.get('RandomGeneration'))
+                                    method = getattr(input_gen_class, var.get('RandomGeneration'))
                                 except AttributeError:
-                                    logging.error('can not find the input generation method {0} (check if it exists)'.format(event.get('RandomGeneration')))
+                                    logging.error('can not find the input generation method {0} (check if it exists)'.format(var.get('RandomGeneration')))
                                 else:
                                     self.speculate_vars[var_name] = method
                                     

@@ -38,11 +38,10 @@ class FB(threading.Thread, fb_interface.FBInterface):
             
             logging.info('running fb...')
             
-            
             # ignores input event id, extracting the event name and variables values
             # inputParams = list(inputs)
             # del inputParams[1]
-
+            
             # if event is supposed to be speculated, checks whether there is an output or if the task needs to be executed
             if eventName in self.speculate_events:
                 speculatedOutput = self.lookup.decision(inputs)
@@ -51,6 +50,7 @@ class FB(threading.Thread, fb_interface.FBInterface):
             try:
                 # uses previous output if already calculated
                 if speculatedOutput != None and speculatedOutput != False:
+                    # logging.info("Use speculated output which is %s", speculatedOutput)
                     outputs = speculatedOutput
             
                 else:   

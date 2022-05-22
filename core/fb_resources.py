@@ -77,7 +77,7 @@ class FBResources:
             logging.error(error)
 
         except AttributeError as error:
-            logging.error('can not find the inputs generation class (check if fb_type.py has a class named [fb_type + InputGen])')
+            logging.warning('inputs generation class not found (if you need it, check if %s.py has a class named [fb_type + InputGen])', self.fb_type)
             logging.error(error)
 
         except Exception as ex:

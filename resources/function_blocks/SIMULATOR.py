@@ -2,20 +2,22 @@ import numpy as np
 import time
 import paho.mqtt.client as mqtt
 import random
+import logging
 
-class CityInputGen:
-    def params_generation(self, event, event_table, speculable_variables, lookup_table):
-        prev_input = list(next(iter(event_table)))
-        print("prev Input ", prev_input)
+class SIMULATORInputGen:
+    def params_generation(self, event, var_index, event_table, speculable_variables, lookup_table):
+        random_existing_input = random.choice(list(event_table))
+        prev_var = eval(random_existing_input[var_index])
+        
+        # logging.info("prev input %s", prev_var)
         
         # get random number between 0 and the penultimate index of the lookup table
-        swap_index = random.randint(0, len(prev_input)-2)
-        print("index ", swap_index)
+        swap_index = random.randint(0, len(prev_var)-2)
+        # logging.info("index %s", swap_index)
         
-        prev_input[swap_index], prev_input[swap_index+1] = prev_input[swap_index +1], prev_input[swap_index]
-        print("new input", prev_input)
+        prev_var[swap_index], prev_var[swap_index+1] = prev_var[swap_index +1], prev_var[swap_index]
         
-        return prev_input
+        return str(prev_var)
         
 
 class City:
@@ -70,11 +72,11 @@ class SIMULATOR:
         elif event_name == 'RUN':
             # Should wait for the handler
             self.params = eval(params)
-
+            
             print("Iteration: " , self.counter)
             self.counter += 1
 
-            time.sleep(5)
+            # time.sleep(5)
 
             cityList = []
             for i in range(0, len(self.params)):
