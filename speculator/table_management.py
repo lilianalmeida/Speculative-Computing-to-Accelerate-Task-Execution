@@ -20,7 +20,7 @@ class TableManagement(threading.Thread):
         while (True):
             idle_time = True
             
-            # logging.info("\n\n\n\nTB\n\n")
+            logging.info("\n\n\n\nTB\n\n")
             
             # checks if there is any function block runnning
             for fb_name, fb_element in self.fb_dictionary.items():
@@ -77,7 +77,7 @@ class TableManagement(threading.Thread):
                     # saves outputs in the table
                     selected_fb.lookup.write_entry(inputs, outputs)
 
-            self.wait_event.wait(60)
+            self.wait_event.wait(10)
         
 
     def fb_selection(self):

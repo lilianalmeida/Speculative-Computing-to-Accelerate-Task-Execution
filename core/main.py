@@ -17,7 +17,7 @@ if __name__ == "__main__":
     address = 'localhost'
     port_diac = 61499
     port_opc = 4840
-    log_level = log_levels['ERROR']
+    log_level = log_levels['INFO']
     n_samples = 10
     secs_sample = 20
     monitor = [n_samples,secs_sample]
