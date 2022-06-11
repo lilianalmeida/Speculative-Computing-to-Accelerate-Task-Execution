@@ -5,8 +5,10 @@
     <EventInputs>
       <Event Name="INIT" Type="Event"/>
       <Event Name="RUN" Type="Event" Speculative="TRUE">
-		<With Var="PARAMS"/>
-	  </Event>
+		    <With Var="PARAMS"/>
+        <Speculator Function="runStreamingRegressor"/>
+        <!-- <Speculator Function="runBatchRegressor"/> -->
+	    </Event>
     </EventInputs>
     <EventOutputs>
       <Event Name="INIT_O" Type="Event"/>
@@ -15,7 +17,7 @@
       </Event>
     </EventOutputs>
     <InputVars>
-      <VarDeclaration Name="PARAMS" Type="STRING" OpcUa="Variable" RandomGeneration="params_generation"/>
+      <VarDeclaration Name="PARAMS" Type="STRING" OpcUa="Variable" RandomGeneration="paramsGeneration"/>
     </InputVars>
     <OutputVars>
       <VarDeclaration Name="VALUE" Type="STRING" OpcUa="Variable"/>

@@ -87,6 +87,35 @@ class FBResources:
             logging.info('input generation class imported from: {0}'.format(self.py_path))
 
         return input_gen_obj
+    
+    
+    def import_speculators(self):
+        logging.info('importing speculators class from fb python file...')
+        speculators_obj = None
+
+        try:
+            # Import method from python file
+            py_fb = importlib.import_module('.' + self.fb_type, package='resources.function_blocks')
+            # Gets the running fb method
+            fb_class = getattr(py_fb, self.fb_type + "Speculators")
+            # Instance the fb class
+            speculators_obj = fb_class()
+
+        except ModuleNotFoundError as error:
+            logging.error('can not import the module (check fb_type.py nomenclature)')
+            logging.error(error)
+
+        except AttributeError as error:
+            logging.warning('speculators class not found (if you need it, check if %s.py has a class named [fb_type + Speculators])', self.fb_type)
+            logging.error(error)
+
+        except Exception as ex:
+            logging.error(ex)
+
+        else:
+            logging.info('input generation class imported from: {0}'.format(self.py_path))
+
+        return speculators_obj
         
 
     def get_xml(self):

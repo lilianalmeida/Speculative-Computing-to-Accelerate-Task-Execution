@@ -58,15 +58,16 @@ class Configuration:
 
         fb_definition, fb_obj = fb_res.import_fb()
         input_gen_obj = fb_res.import_input_generations()
+        speculators_obj = fb_res.import_speculators()
 
         # check if if happened any importing error
         if fb_definition is not None:
 
             ## if it is a real FB, not a hidden one
             if monitor:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, input_gen_obj, monitor=self.monitor)
+                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, input_gen_obj, speculators_obj, monitor=self.monitor)
             else:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, input_gen_obj)
+                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, input_gen_obj, speculators_obj)
 
             self.set_fb(fb_name, fb_element)
             logging.info('created fb type: {0}, instance: {1}'.format(fb_type, fb_name))

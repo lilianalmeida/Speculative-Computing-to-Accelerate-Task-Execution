@@ -7,9 +7,9 @@ import time
 
 class FB(threading.Thread, fb_interface.FBInterface):
 
-    def __init__(self, fb_name, fb_type, fb_obj, fb_xml, input_gen_obj, monitor=None):
+    def __init__(self, fb_name, fb_type, fb_obj, fb_xml, input_gen_obj, speculators_obj,  monitor=None):
         threading.Thread.__init__(self, name=fb_name)
-        fb_interface.FBInterface.__init__(self, fb_name, fb_type, fb_xml, input_gen_obj, monitor)
+        fb_interface.FBInterface.__init__(self, fb_name, fb_type, fb_xml, input_gen_obj,speculators_obj, monitor)
 
         self.fb_obj = fb_obj
         self.kill_event = threading.Event()
@@ -53,13 +53,30 @@ class FB(threading.Thread, fb_interface.FBInterface):
                     # logging.info("Use speculated output which is %s", speculatedOutput)
                     outputs = speculatedOutput
             
-                else:   
-                    # executes task
-                    outputs = self.fb_obj.schedule(*inputs)
+                else:  
+                    bestOutput = None
+                    bestConfidenceLevel = 50 # TODO: ver se é o melhor valor
                     
-                    # saves new calculated value in the table
-                    if eventName in self.speculate_events:
-                        self.lookup.write_entry(inputs, outputs)
+                    # run all speculators
+                    for speculator in self.speculate_events[eventName]:
+                        outputs, confidenceLevel = speculator("PREDICT", inputs, None, None) # TODO: ver como enviar os inputs e como vêm os outputs
+                        
+                        # keep if it has a higher confidence level
+                        if outputs != None and confidenceLevel < bestConfidenceLevel:
+                            bestOutput = outputs
+                            bestConfidenceLevel = confidenceLevel
+                    
+                    # if all speculators return None, execute task
+                    if bestOutput == None:
+                        # executes task
+                        outputs = self.fb_obj.schedule(*inputs)
+                        
+                        # saves new calculated value in the table and sim
+                        if eventName in self.speculate_events:
+                            self.lookup.write_entry(inputs, outputs)
+                            
+                            for speculator in self.speculate_events[eventName]:
+                                speculator("TRAIN_STREAM", inputs, outputs, None) # TODO: ver como enviar os inputs e como vêm os outputs
 
             except TypeError as error:
                 logging.error('invalid number of arguments (check if fb method args are in fb_type.fbt)')

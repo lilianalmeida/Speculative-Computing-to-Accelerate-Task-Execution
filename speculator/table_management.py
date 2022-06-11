@@ -9,7 +9,7 @@ import logging
 class TableManagement(threading.Thread):
     
     def __init__(self, config_id, fb_dictionary):
-        threading.Thread.__init__(self, name=config_id)
+        threading.Thread.__init__(self, name=(config_id + '_tableManagement'))
         
         self.fb_dictionary = fb_dictionary
         self.wait_event = threading.Event()
@@ -35,7 +35,7 @@ class TableManagement(threading.Thread):
                         idle_time = False 
                         break
             
-            # breaks loop if it doesn't have any speculative FB
+            # breaks while loop if it doesn't have any speculative FB
             if not has_speculative_FBs:
                 break
                     
@@ -76,6 +76,10 @@ class TableManagement(threading.Thread):
                             logging.error("%s", e)
                     # saves outputs in the table
                     selected_fb.lookup.write_entry(inputs, outputs)
+                    
+                    # TODO: ver os inputs/outputs
+                    for speculator in selected_fb.speculate_events[selected_event]:
+                        speculator("TRAIN_STREAM", inputs, outputs, None)
 
             self.wait_event.wait(10)
         

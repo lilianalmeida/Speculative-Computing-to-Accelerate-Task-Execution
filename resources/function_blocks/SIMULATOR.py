@@ -3,9 +3,12 @@ import time
 import paho.mqtt.client as mqtt
 import random
 import logging
+from river import linear_model
+from river import metrics
+from river import preprocessing
 
 class SIMULATORInputGen:
-    def params_generation(self, event, var_index, event_table, speculable_variables, lookup_table):
+    def paramsGeneration(self, event, var_index, event_table, speculable_variables, lookup_table):
         random_existing_input = random.choice(list(event_table))
         prev_var = eval(random_existing_input[var_index])
         
@@ -18,6 +21,38 @@ class SIMULATORInputGen:
         prev_var[swap_index], prev_var[swap_index+1] = prev_var[swap_index +1], prev_var[swap_index]
         
         return str(prev_var)
+
+class SIMULATORSpeculators:
+    def runStreamingRegressor(self, op, input, output, event_table):
+        if op == "PREDICT":
+            if self.streaming_model:
+                # verify if metric value is good enough for the value to be used
+                if self.metric_val < 0.4: # TODO: ver que valor usar
+                    return self.streaming_model.predict_one(input), self.streaming_metric.get()
+        elif op == "TRAIN_STREAM":
+            if not self.streaming:
+                self.streaming_model = (preprocessing.StandardScaler() | linear_model.LinearRegression(intercept_lr=.1))
+                self.streaming_metric = metrics.MAE()
+            
+            # train model         
+            y_pred = self.streaming_model.predict_one(input)
+            self.streaming_model = self.streaming_model.learn_one(input, output)
+            self.streaming_metric = self.streaming_metric.update(output, y_pred)
+
+        else: # TRAIN_BATCH
+            return None
+        
+        return None
+
+    # def runBatchRegressor(self, event, var_index, event_table, speculable_variables, lookup_table):
+        # if op == "PREDICT":
+        #     if not self.batch_model:
+        #         return None
+        # elif op == "TRAIN_STREAM":
+        #     return None
+        # else: # TRAIN_BATCH
+        #     return None # not None
+    #     return None
         
 
 class City:

@@ -212,7 +212,7 @@ class FBInterface:
 
 ###############################################################################
 
-    def __init__(self, fb_name, fb_type, xml_root, input_gen_class, monitor=None):
+    def __init__(self, fb_name, fb_type, xml_root, input_gen_class, speculators_class, monitor=None):
 
         self.fb_name = fb_name
         self.fb_type = fb_type
@@ -232,7 +232,7 @@ class FBInterface:
         self.input_vars = OrderedDict()
         self.output_vars = OrderedDict()
         
-        self.speculate_events = []
+        self.speculate_events = {}
         self.speculate_vars = OrderedDict()
 
         logging.info('parsing the fb interface (inputs/outputs events/vars)')
@@ -253,7 +253,16 @@ class FBInterface:
                             self.input_events[event_name] = (event_type, None, False)
                             
                             if event.get('Speculative') == 'TRUE':
-                                self.speculate_events.append(event_name)
+                                self.speculate_events[event_name] = []
+                                
+                                for speculator in event:
+                                    if speculator.tag == 'Speculator':
+                                        try:
+                                            method = getattr(speculators_class, speculator.get('Function'))
+                                        except AttributeError:
+                                            logging.error('can not find the speculator method {0} (check if it exists)'.format(speculator.get('Function')))
+                                        else:
+                                            self.speculate_events[event_name].append(method)
 
                     # Output Events
                     elif interface.tag == 'EventOutputs':
