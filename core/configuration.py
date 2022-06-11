@@ -3,7 +3,7 @@ from core import fb
 from core import fb_interface
 from xml.etree import ElementTree as ETree
 import logging
-from speculator import table_management
+from speculator import table_management, train_speculator
 
 
 
@@ -20,6 +20,8 @@ class Configuration:
         self.create_fb('START', config_type)
         
         self.table_management = table_management.TableManagement(config_id, self.fb_dictionary)
+        
+        self.train_speculator = train_speculator.TrainSpeculator(config_id, self.fb_dictionary)
 
     def get_fb(self, fb_name):
         fb_element = None
@@ -167,6 +169,7 @@ class Configuration:
     def start_work(self):
         logging.info('starting the fb flow...')
         self.table_management.start()
+        self.train_speculator.start()
         
         for fb_name, fb_element in self.fb_dictionary.items():
             if fb_name != 'START':
