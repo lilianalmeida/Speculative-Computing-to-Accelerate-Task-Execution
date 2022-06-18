@@ -4,3 +4,4 @@ opcua
 numpy
 scikit-learn
 pandas
+river

@@ -40,7 +40,7 @@ class TableManagement(threading.Thread):
                 break
                     
             if idle_time:
-                # logging.info("iddleee")
+                logging.info("iddleee")
                 # choose which function block to execute
                 exists, selected_fb, selected_event = self.fb_selection()
                 
@@ -70,14 +70,14 @@ class TableManagement(threading.Thread):
                     
                     # executes task with chosen inputssss
                     try:
-                        # logging.info("executing task")
+                        logging.info("executing task")
                         outputs = selected_fb.fb_obj.schedule(*inputs)
                     except Exception as e: 
                             logging.error("%s", e)
+                            
                     # saves outputs in the table
                     selected_fb.lookup.write_entry(inputs, outputs)
                     
-                    # TODO: ver os inputs/outputs
                     for speculator in selected_fb.speculate_events[selected_event]:
                         speculator("TRAIN_STREAM", inputs, outputs, None)
 

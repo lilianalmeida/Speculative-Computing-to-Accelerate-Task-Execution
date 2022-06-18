@@ -3,9 +3,17 @@ import time
 import paho.mqtt.client as mqtt
 import random
 import logging
-from river import linear_model
+import numpy as np
+
+# river
+from river import neighbors
 from river import metrics
 from river import preprocessing
+
+# scikit-learn
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
 
 class SIMULATORInputGen:
     def paramsGeneration(self, event, var_index, event_table, speculable_variables, lookup_table):
@@ -23,36 +31,100 @@ class SIMULATORInputGen:
         return str(prev_var)
 
 class SIMULATORSpeculators:
-    def runStreamingRegressor(self, op, input, output, event_table):
-        if op == "PREDICT":
-            if self.streaming_model:
-                # verify if metric value is good enough for the value to be used
-                if self.metric_val < 0.4: # TODO: ver que valor usar
-                    return self.streaming_model.predict_one(input), self.streaming_metric.get()
-        elif op == "TRAIN_STREAM":
-            if not self.streaming:
-                self.streaming_model = (preprocessing.StandardScaler() | linear_model.LinearRegression(intercept_lr=.1))
-                self.streaming_metric = metrics.MAE()
+    def runStreamingRegressor(self, op, inputs, outputs, event_table):
+        # parses inputs and outputs
+        if inputs:
+            input = list(inputs)[2]
+            input = eval(input)
+            input = [ item for elem in input for item in list(elem)]
+            input = {k: v for k, v in enumerate(input)}
+        if outputs:
+            output = outputs[2]
             
-            # train model         
+        if op == "PREDICT":
+            logging.info("PREDIT STREAM, input = %s", input)
+            logging.info("metric %s", self.streaming_MAE)
+            
+            if self.streaming_model:
+                # verifies if metric value is good enough for the value to be used
+                if self.streaming_MAE < 80:
+                    return [self.streaming_model.predict_one(input), self.streaming_MAE.get()]
+                
+        elif op == "TRAIN_STREAM":
+            logging.info("TRAIN_STREAM, input = %s adn output = %s", input, output)
+            
+            if not self.streaming_model:
+                logging.info("model still does not exist")
+                self.streaming_model = neighbors.KNNRegressor(n_neighbors=3)
+                self.streaming_MAE = metrics.MAE()
+            
+            # trains model         
             y_pred = self.streaming_model.predict_one(input)
             self.streaming_model = self.streaming_model.learn_one(input, output)
-            self.streaming_metric = self.streaming_metric.update(output, y_pred)
-
+            self.streaming_MAE = self.streaming_MAE.update(output, y_pred)
+            
         else: # TRAIN_BATCH
             return None
         
         return None
 
     # def runBatchRegressor(self, event, var_index, event_table, speculable_variables, lookup_table):
-        # if op == "PREDICT":
-        #     if not self.batch_model:
-        #         return None
-        # elif op == "TRAIN_STREAM":
-        #     return None
-        # else: # TRAIN_BATCH
-        #     return None # not None
-    #     return None
+    def runBatchRegressor(self, op, inputs, outputs, event_table):            
+
+        if op == "PREDICT":
+            logging.info("PREDIT BATCH, input = %s", input)
+            logging.info("metric %s", self.batch_MAE)
+            
+            # parses inputs
+            input = list(inputs)[2]
+            input = eval(input)
+            input = [ item for elem in input for item in list(elem)]
+            input = [input]
+            
+            if self.batch_model:
+                # verifies if metric value is good enough for the value to be used
+                if self.batch_MAE < 80:
+                    y_pred = self.batch_model.predict(input)
+                    return y_pred
+                
+        elif op == "TRAIN_BATCH":
+            logging.info("TRAIN_BATCH")
+            
+            if len(event_table) < 25:
+                return None
+            
+            # gets inputs and outputs
+            inputs = []
+            outputs = []
+
+            for k,v in event_table.items():
+                input = list(k)[2]
+                input = eval(input)
+                input = [ item for elem in input for item in list(elem)]
+                inputs.append(input)
+
+                output = v[2]
+                outputs.append(output)
+                
+            # splits dataset and trains model
+            X_train, X_test, y_train, y_test = train_test_split(inputs, outputs, test_size=0.25, random_state=1)
+            new_batch_model = KNeighborsRegressor(n_neighbors=3)
+            new_batch_model.fit(X_train, y_train)
+
+            # predicts and evaluates
+            y_pred = new_batch_model.predict(X_test)
+            new_batch_MAE = mean_absolute_error(y_test, y_pred)
+            
+            # updates class variables
+            self.batch_model = new_batch_model
+            self.batch_MAE = new_batch_MAE
+            
+            logging.info("new metric %s", self.batch_MAE)
+            
+        else: # TRAIN_STREAM
+            return None
+        
+        return None
         
 
 class City:

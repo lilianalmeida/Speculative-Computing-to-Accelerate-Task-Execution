@@ -7,7 +7,7 @@
       <Event Name="RUN" Type="Event" Speculative="TRUE">
 		    <With Var="PARAMS"/>
         <Speculator Function="runStreamingRegressor"/>
-        <!-- <Speculator Function="runBatchRegressor"/> -->
+        <Speculator Function="runBatchRegressor"/>
 	    </Event>
     </EventInputs>
     <EventOutputs>

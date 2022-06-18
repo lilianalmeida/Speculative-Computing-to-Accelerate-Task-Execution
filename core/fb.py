@@ -2,7 +2,7 @@ import threading
 import logging
 from core import fb_interface
 from speculator import lookup
-import time
+import sys
 
 
 class FB(threading.Thread, fb_interface.FBInterface):
@@ -50,21 +50,24 @@ class FB(threading.Thread, fb_interface.FBInterface):
             try:
                 # uses previous output if already calculated
                 if speculatedOutput != None and speculatedOutput != False:
-                    # logging.info("Use speculated output which is %s", speculatedOutput)
+                    logging.info("Use speculated output which is %s", speculatedOutput)
                     outputs = speculatedOutput
             
                 else:  
                     bestOutput = None
-                    bestConfidenceLevel = 50 # TODO: ver se é o melhor valor
+                    bestConfidenceLevel = sys.float_info.max
                     
                     # run all speculators
                     for speculator in self.speculate_events[eventName]:
-                        outputs, confidenceLevel = speculator("PREDICT", inputs, None, None) # TODO: ver como enviar os inputs e como vêm os outputs
+                        output, confidenceLevel = speculator("PREDICT", inputs, None, None)
+                        logging.info("OUTPUT for a speculator %s confidence level %s", output, confidenceLevel)
                         
                         # keep if it has a higher confidence level
-                        if outputs != None and confidenceLevel < bestConfidenceLevel:
-                            bestOutput = outputs
+                        if output != None and confidenceLevel < bestConfidenceLevel:
+                            bestOutput = output
                             bestConfidenceLevel = confidenceLevel
+                    
+                    logging.info("BEST OUTPUT %s ", bestOutput)
                     
                     # if all speculators return None, execute task
                     if bestOutput == None:
@@ -76,7 +79,14 @@ class FB(threading.Thread, fb_interface.FBInterface):
                             self.lookup.write_entry(inputs, outputs)
                             
                             for speculator in self.speculate_events[eventName]:
-                                speculator("TRAIN_STREAM", inputs, outputs, None) # TODO: ver como enviar os inputs e como vêm os outputs
+                                speculator("TRAIN_STREAM", inputs, outputs, None)
+                    else:
+                        # Add output event info to final output array
+                        prev_output = next(v for  (k,v) in self.lookup.lookupTable.items() if k[0] == eventName)
+                        outputs = prev_output[:2]
+                        outputs.extend(bestOutput)
+                        
+                        logging.info("FINAL OUTPUT %s ", outputs)
 
             except TypeError as error:
                 logging.error('invalid number of arguments (check if fb method args are in fb_type.fbt)')
