@@ -38,5 +38,5 @@ class TrainSpeculator(threading.Thread):
             if not has_speculative_FBs:
                 break
 
-        self.wait_event.wait(60)
+            self.wait_event.wait(60)
     

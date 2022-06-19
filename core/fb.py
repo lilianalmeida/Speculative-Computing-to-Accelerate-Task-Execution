@@ -38,12 +38,9 @@ class FB(threading.Thread, fb_interface.FBInterface):
             
             logging.info('running fb...')
             
-            # ignores input event id, extracting the event name and variables values
-            # inputParams = list(inputs)
-            # del inputParams[1]
-            
             # if event is supposed to be speculated, checks whether there is an output or if the task needs to be executed
             if eventName in self.speculate_events:
+                logging.info("Checking lookup table")
                 speculatedOutput = self.lookup.decision(inputs)
                 
 
@@ -57,17 +54,23 @@ class FB(threading.Thread, fb_interface.FBInterface):
                     bestOutput = None
                     bestConfidenceLevel = sys.float_info.max
                     
-                    # run all speculators
-                    for speculator in self.speculate_events[eventName]:
-                        output, confidenceLevel = speculator("PREDICT", inputs, None, None)
-                        logging.info("OUTPUT for a speculator %s confidence level %s", output, confidenceLevel)
-                        
-                        # keep if it has a higher confidence level
-                        if output != None and confidenceLevel < bestConfidenceLevel:
-                            bestOutput = output
-                            bestConfidenceLevel = confidenceLevel
+                    logging.info("EVENTS %s %s", eventName, self.speculate_events)
                     
-                    logging.info("BEST OUTPUT %s ", bestOutput)
+                    if eventName in self.speculate_events:
+                        # run all speculators
+                        for speculator in self.speculate_events[eventName]:
+                            spec_result = speculator("PREDICT", inputs, None, None)
+                            
+                            if spec_result != None:
+                                output, confidenceLevel = spec_result
+                                logging.info("OUTPUT for a speculator %s confidence level %s", output, confidenceLevel)
+                                
+                                # keep if it has a higher confidence level
+                                if output != None and confidenceLevel < bestConfidenceLevel:
+                                    bestOutput = output
+                                    bestConfidenceLevel = confidenceLevel
+                        
+                        logging.info("BEST OUTPUT %s ", bestOutput)
                     
                     # if all speculators return None, execute task
                     if bestOutput == None:

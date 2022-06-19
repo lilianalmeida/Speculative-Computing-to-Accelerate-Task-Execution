@@ -263,6 +263,8 @@ class FBInterface:
                                             logging.error('can not find the speculator method {0} (check if it exists)'.format(speculator.get('Function')))
                                         else:
                                             self.speculate_events[event_name].append(method)
+                                
+                                logging.info("speculate events %s", self.speculate_events)
 
                     # Output Events
                     elif interface.tag == 'EventOutputs':

@@ -31,6 +31,12 @@ class SIMULATORInputGen:
         return str(prev_var)
 
 class SIMULATORSpeculators:
+    def __init__ (self):
+        self.streaming_model = None
+        self.streaming_MAE = None
+        self.batch_model = None
+        self.batch_MAE = None
+        
     def runStreamingRegressor(self, op, inputs, outputs, event_table):
         # parses inputs and outputs
         if inputs:
@@ -43,12 +49,12 @@ class SIMULATORSpeculators:
             
         if op == "PREDICT":
             logging.info("PREDIT STREAM, input = %s", input)
-            logging.info("metric %s", self.streaming_MAE)
             
             if self.streaming_model:
+                logging.info("metric %s", self.streaming_MAE)
                 # verifies if metric value is good enough for the value to be used
-                if self.streaming_MAE < 80:
-                    return [self.streaming_model.predict_one(input), self.streaming_MAE.get()]
+                if self.streaming_MAE.get() < 80:
+                    return [self.streaming_model.predict_one(input)], self.streaming_MAE.get()
                 
         elif op == "TRAIN_STREAM":
             logging.info("TRAIN_STREAM, input = %s adn output = %s", input, output)
@@ -61,7 +67,7 @@ class SIMULATORSpeculators:
             # trains model         
             y_pred = self.streaming_model.predict_one(input)
             self.streaming_model = self.streaming_model.learn_one(input, output)
-            self.streaming_MAE = self.streaming_MAE.update(output, y_pred)
+            self.streaming_MAE.update(output, y_pred)
             
         else: # TRAIN_BATCH
             return None
@@ -72,7 +78,7 @@ class SIMULATORSpeculators:
     def runBatchRegressor(self, op, inputs, outputs, event_table):            
 
         if op == "PREDICT":
-            logging.info("PREDIT BATCH, input = %s", input)
+            logging.info("PREDIT BATCH, input = %s", inputs)
             logging.info("metric %s", self.batch_MAE)
             
             # parses inputs
@@ -85,7 +91,7 @@ class SIMULATORSpeculators:
                 # verifies if metric value is good enough for the value to be used
                 if self.batch_MAE < 80:
                     y_pred = self.batch_model.predict(input)
-                    return y_pred
+                    return y_pred, self.batch_MAE
                 
         elif op == "TRAIN_BATCH":
             logging.info("TRAIN_BATCH")
