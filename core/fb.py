@@ -40,21 +40,17 @@ class FB(threading.Thread, fb_interface.FBInterface):
             
             # if event is supposed to be speculated, checks whether there is an output or if the task needs to be executed
             if eventName in self.speculate_events:
-                logging.info("Checking lookup table")
                 speculatedOutput = self.lookup.decision(inputs)
-                
 
             try:
                 # uses previous output if already calculated
                 if speculatedOutput != None and speculatedOutput != False:
-                    logging.info("Use speculated output which is %s", speculatedOutput)
+                    logging.info('using output from lookup table...')
                     outputs = speculatedOutput
             
                 else:  
                     bestOutput = None
                     bestConfidenceLevel = sys.float_info.max
-                    
-                    logging.info("EVENTS %s %s", eventName, self.speculate_events)
                     
                     if eventName in self.speculate_events:
                         # run all speculators
@@ -63,17 +59,16 @@ class FB(threading.Thread, fb_interface.FBInterface):
                             
                             if spec_result != None:
                                 output, confidenceLevel = spec_result
-                                logging.info("OUTPUT for a speculator %s confidence level %s", output, confidenceLevel)
                                 
                                 # keep if it has a higher confidence level
                                 if output != None and confidenceLevel < bestConfidenceLevel:
                                     bestOutput = output
                                     bestConfidenceLevel = confidenceLevel
-                        
-                        logging.info("BEST OUTPUT %s ", bestOutput)
                     
                     # if all speculators return None, execute task
                     if bestOutput == None:
+                        logging.info('executing fb...')
+                        
                         # executes task
                         outputs = self.fb_obj.schedule(*inputs)
                         
@@ -84,12 +79,13 @@ class FB(threading.Thread, fb_interface.FBInterface):
                             for speculator in self.speculate_events[eventName]:
                                 speculator("TRAIN_STREAM", inputs, outputs, None)
                     else:
+                        logging.info('using speculated output...')
+                        
                         # Add output event info to final output array
                         prev_output = next(v for  (k,v) in self.lookup.lookupTable.items() if k[0] == eventName)
                         outputs = prev_output[:2]
                         outputs.extend(bestOutput)
                         
-                        logging.info("FINAL OUTPUT %s ", outputs)
 
             except TypeError as error:
                 logging.error('invalid number of arguments (check if fb method args are in fb_type.fbt)')

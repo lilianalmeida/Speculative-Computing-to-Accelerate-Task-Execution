@@ -1,8 +1,6 @@
 import numpy as np
-import time
 import paho.mqtt.client as mqtt
 import random
-import logging
 import numpy as np
 
 # river
@@ -20,11 +18,8 @@ class SIMULATORInputGen:
         random_existing_input = random.choice(list(event_table))
         prev_var = eval(random_existing_input[var_index])
         
-        # logging.info("prev input %s", prev_var)
-        
         # get random number between 0 and the penultimate index of the lookup table
         swap_index = random.randint(0, len(prev_var)-2)
-        # logging.info("index %s", swap_index)
         
         prev_var[swap_index], prev_var[swap_index+1] = prev_var[swap_index +1], prev_var[swap_index]
         
@@ -48,19 +43,13 @@ class SIMULATORSpeculators:
             output = outputs[2]
             
         if op == "PREDICT":
-            logging.info("PREDIT STREAM, input = %s", input)
-            
             if self.streaming_model:
-                logging.info("metric %s", self.streaming_MAE)
                 # verifies if metric value is good enough for the value to be used
-                if self.streaming_MAE.get() < 80:
+                if self.streaming_MAE.get() < 60:
                     return [self.streaming_model.predict_one(input)], self.streaming_MAE.get()
                 
         elif op == "TRAIN_STREAM":
-            logging.info("TRAIN_STREAM, input = %s adn output = %s", input, output)
-            
             if not self.streaming_model:
-                logging.info("model still does not exist")
                 self.streaming_model = neighbors.KNNRegressor(n_neighbors=3)
                 self.streaming_MAE = metrics.MAE()
             
@@ -78,9 +67,6 @@ class SIMULATORSpeculators:
     def runBatchRegressor(self, op, inputs, outputs, event_table):            
 
         if op == "PREDICT":
-            logging.info("PREDIT BATCH, input = %s", inputs)
-            logging.info("metric %s", self.batch_MAE)
-            
             # parses inputs
             input = list(inputs)[2]
             input = eval(input)
@@ -89,14 +75,13 @@ class SIMULATORSpeculators:
             
             if self.batch_model:
                 # verifies if metric value is good enough for the value to be used
-                if self.batch_MAE < 80:
+                if self.batch_MAE < 60:
                     y_pred = self.batch_model.predict(input)
                     return y_pred, self.batch_MAE
                 
+                
         elif op == "TRAIN_BATCH":
-            logging.info("TRAIN_BATCH")
-            
-            if len(event_table) < 25:
+            if len(event_table) < 20:
                 return None
             
             # gets inputs and outputs
@@ -124,8 +109,7 @@ class SIMULATORSpeculators:
             # updates class variables
             self.batch_model = new_batch_model
             self.batch_MAE = new_batch_MAE
-            
-            logging.info("new metric %s", self.batch_MAE)
+                        
             
         else: # TRAIN_STREAM
             return None
@@ -188,8 +172,6 @@ class SIMULATOR:
             
             print("Iteration: " , self.counter)
             self.counter += 1
-
-            # time.sleep(5)
 
             cityList = []
             for i in range(0, len(self.params)):

@@ -14,8 +14,7 @@ class TrainSpeculator(threading.Thread):
         has_speculative_FBs = False
         
         while (True):
-            
-            logging.info("\n\n\n\nTrainS\n\n")
+            logging.info('training speculators in batch...')
             
             for fb_element in self.fb_dictionary.values():
                 
@@ -38,5 +37,5 @@ class TrainSpeculator(threading.Thread):
             if not has_speculative_FBs:
                 break
 
-            self.wait_event.wait(60)
+            self.wait_event.wait(40)
     

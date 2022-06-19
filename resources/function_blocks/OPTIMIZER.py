@@ -181,7 +181,6 @@ class OPTIMIZER:
 
         if event_name == 'RESULT_I':
 
-            #print("OPTIMIZER: received param:" , param, "all params:" , self.params)
             print("OPTIMIZER: received param:" , param)
 
             self.results[self.params.index(param)] = result
