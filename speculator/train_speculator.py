@@ -31,7 +31,7 @@ class TrainSpeculator(threading.Thread):
                         event_table = {k:v for (k,v) in lookup_table.items() if event == k[0]}
                         
                         for speculator in speculators_array:
-                            speculator("TRAIN_BATCH", None, None, event_table)
+                            speculator("TRAIN_OFFLINE", None, None, event_table)
             
             # breaks while loop if it doesn't have any speculative FB
             if not has_speculative_FBs:

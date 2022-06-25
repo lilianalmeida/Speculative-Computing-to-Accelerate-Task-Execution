@@ -77,7 +77,7 @@ class FB(threading.Thread, fb_interface.FBInterface):
                             self.lookup.write_entry(inputs, outputs)
                             
                             for speculator in self.speculate_events[eventName]:
-                                speculator("TRAIN_STREAM", inputs, outputs, None)
+                                speculator("TRAIN_ONLINE", inputs, outputs, None)
                     else:
                         logging.info('using speculated output...')
                         

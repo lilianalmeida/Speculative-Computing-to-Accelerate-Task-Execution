@@ -48,7 +48,7 @@ class SIMULATORSpeculators:
                 if self.streaming_MAE.get() < 60:
                     return [self.streaming_model.predict_one(input)], self.streaming_MAE.get()
                 
-        elif op == "TRAIN_STREAM":
+        elif op == "TRAIN_ONLINE":
             if not self.streaming_model:
                 self.streaming_model = neighbors.KNNRegressor(n_neighbors=3)
                 self.streaming_MAE = metrics.MAE()
@@ -58,7 +58,7 @@ class SIMULATORSpeculators:
             self.streaming_model = self.streaming_model.learn_one(input, output)
             self.streaming_MAE.update(output, y_pred)
             
-        else: # TRAIN_BATCH
+        else: # TRAIN_OFFLINE
             return None
         
         return None
@@ -80,7 +80,7 @@ class SIMULATORSpeculators:
                     return y_pred, self.batch_MAE
                 
                 
-        elif op == "TRAIN_BATCH":
+        elif op == "TRAIN_OFFLINE":
             if len(event_table) < 20:
                 return None
             
@@ -111,7 +111,7 @@ class SIMULATORSpeculators:
             self.batch_MAE = new_batch_MAE
                         
             
-        else: # TRAIN_STREAM
+        else: # TRAIN_ONLINE
             return None
         
         return None

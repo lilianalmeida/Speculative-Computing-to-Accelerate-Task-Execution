@@ -69,7 +69,7 @@ class TableManagement(threading.Thread):
                     selected_fb.lookup.write_entry(inputs, outputs)
                     
                     for speculator in selected_fb.speculate_events[selected_event]:
-                        speculator("TRAIN_STREAM", inputs, outputs, None)
+                        speculator("TRAIN_ONLINE", inputs, outputs, None)
 
             self.wait_event.wait(10)
         
